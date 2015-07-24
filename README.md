@@ -10,18 +10,16 @@ Activities should only be used inside a thread. They are wrappers around the asy
 Rule of thumb:
 * Only use Activities inside a Thread.
 * Only Activities can interact with variables outside the thread safely. Use existing Activities or wrap the logic in an Activity. 
-* An async function needs to have callback as the last parameter when wrapped as Activity.Callback(value) becomes the return value of the Activity.
-* You can create new Activities to reuse them later
+* An async function needs to have callback as the last parameter when wrapped as Activity. Callback(value) becomes the return value of the Activity.
+* You can create new Activities to reuse them later.
 
 Imaging this requirement :  
 
 * ajax call to a server 
 * display return json on the page
-* let user select some items
+* user select some items
 
-These activities needs to be run following certain orders. 
-
-Without using callbacks. below is the implementation in jThread.
+Without using callbacks, below is the implementation in jThread.
 
 ```javascript
 var $ = window.jThread; 
