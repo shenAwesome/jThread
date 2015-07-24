@@ -1,34 +1,89 @@
-﻿/*-------------------mimic thread--------------------------------------------------------------------------------------------------*/
+﻿
+/*-------------------Document for jsDOC--------------------------------------------------------------------------------------------------*/
+
+/**
+* Start a new Thread
+* @param {Function} func - contains main thread logic
+* @param {Function} onFinish - thread is restarted if the function returns true
+* @param {Function=} onStep - called when one activity is finished and thread continues
+* @example
+* $ = window.jThread; 
+* $(function(){ //main logic
+*    $.log('start');    
+*    return 'done';
+* },function(ret){//finish callback
+*    alert(ret);
+* }); 
+* 
+*/ 
+function $() { };
+
+/**
+* Wrap and start an Activity, should only be used in side a thread
+* @param {Function} func - function to be wrapped 
+* @example
+* $ = window.jThread; 
+* $(function(){ //main logic
+*    var ret = $(function(){//activity which finishes immediately if no parameter
+*       return 'result1';
+*    }); 
+*    ret = $(function(callback){// real async activity which finishes by calling the callback;
+*       setTimeout(function(){
+*           callback(ret + ' result2');    
+*       },1000); 
+*    }); 
+*    return ret;
+* },function(ret){//finish callback
+*    alert(ret);
+* }); 
+*/
+function $() { };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 (function () {
-    var currentWorker;
-    /** mimic sync behavior*/
+    //To pass current thread to all activities inside thread function. It is safe because JavaScript is turn based.
+    //The thread is passed to all inner Activities just before they are executed.
+    var currentThread;
+    //Start a thread
     function run(func, onFinish) {
         var currenFuncHandle = null;
         function next() {
             try {
-                currentWorker = worker;
+                currentThread = thread;
                 var ret = func.call();
-                //check if the flow needs to be repeated 
-                if (onFinish(ret)) {
-                    worker.step = 0;
-                    worker.act.length = 0;
+                if (onFinish(ret)) { //check if the flow needs to be repeated 
+                    thread.step = 0;
+                    thread.act.length = 0;
                     next();
+                } else {
+                    thread.step = -1;
                 }
-                worker.onStep(-1);
+                thread.onStep(-1);
             } catch (e) {
                 if (e === parseInt(e, 10)) {//go to the step if it's a number
-                    worker.act.length = e;
-                    worker.step = 0;
-                    //if (worker.log) console.log('goto ' + e)
+                    thread.act.length = e;
+                    thread.step = 0;
                     next();
                 } else {//an activity is runing, waiting for it
                     if (!e.isHandle) throw e;
                     currenFuncHandle = e;
-                    worker.step = 0;
+                    thread.step = 0;
                 }
             }
         }
-        var worker = {
+        var thread = {
             onStep: function (step) {
                 //console.log(step);
             },
@@ -36,24 +91,26 @@
             act: [],
             next: next,
             ctx: {},
-            cancel: function () {//stop the worker and inform the current running function
+            cancel: function () {//stop the thread and inform the current running function
                 currenFuncHandle && currenFuncHandle();
-                worker.next = function () { };
-                worker.onStep(-1);
+                thread.next = function () { };
+                thread.step = -1;
+                thread.onStep(-1);
                 onFinish();
             }
         };
         setTimeout(next, 1);
-        return worker;
+        return thread;
     }
     /** convert async function to sync style, to be used in run*/
     function sync(func) {
         return function () {
-            var c = currentWorker;
+            var c = currentThread;
             var idx = c.step;
             //to stop this activity from outside, it is also called when activity finishes
             var closeHandle;
             function finish(value) {
+                if (c.step == -1) return;//finished already
                 if (value === undefined) value = null;
                 c.act[idx] = value;
                 setTimeout(function () {
@@ -77,14 +134,24 @@
         }
     }
 
-    //short cuts for run() and sync(func)();
+    //An adapter for run() and sync(func)(); 
+
+
+
+    /**
+     * test
+     */
     function main() {
         var args = Array.prototype.slice.call(arguments);
-        if (args.length == 2) {
-            return run(args[0], args[1]);
+        if (args.length >= 2) {
+            var thread = run(args[0], args[1]);
+            if (args.length == 3) {
+                thread.onStep = args[2];
+            }
+            return thread;
         } else {
             var func = args[0];
-            if (func.length == 0) {//no arguments, then it is just a normal sync block
+            if (func.length == 0) {//just normal sync JS code if function has no argument, fill the callback boilerplate
                 func = function (callback) {
                     var ret = args[0]();
                     callback(ret);
@@ -94,8 +161,8 @@
         }
     }
 
-    //convert a normal function to sync function, if name is given, it is added to the global 'main'
-    function install(func, name, autoFinish) {
+    //Convert a function to sync function. It is added to the global Thread object if name is given
+    function addSync(func, name, autoFinish) {
         var func_;
         if (autoFinish) {
             func_ = sync(function () {
@@ -112,7 +179,7 @@
         return func;
     }
 
-    main.sync = install;
+    main.sync = addSync;
 
     window.jThread = main;
 }());

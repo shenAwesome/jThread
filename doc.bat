@@ -1,0 +1,1 @@
+jsdoc src/jThread.js -d doc
