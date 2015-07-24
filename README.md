@@ -2,9 +2,10 @@
 A poor man's Thread for JavaScript
 
 The goal of jThread is to mimic the JAVA Thread in JavaScript to solve the 'Callback Hell' problem. In the Web page development, there are mainly 2 types of async logic: Ajax call or UI logic needs user interaction. 
-With callbacks, the code is often tightly coupled, the callback chain can be different to understand or debug. jThread utilizes the 'Thread&Activity' concept to solve the problem. It is inspired by the workflow/activity design..
+With callbacks, the code is often tightly coupled, the callback chain can be difficult to understand or debug. Code re-usability is harder to achieve . jThread utilizes the 'Thread&Activity' concept to solve the problem. 
+It is inspired by the workflow/activity design.
 
-When coding with jThread, There are two important Type: Thread and Activity. A Thread mimics the behaviour of a thread in languages like Java or C#, where you can code in a blocking style without callbacks. 
+When coding with jThread, There are two important Types: Thread and Activity. A Thread mimics the behaviour of a thread in languages like Java or C#, where you can code in a blocking style without callbacks. 
 Activities should only be used inside a thread. They are wrappers around the asynchronous functions. You can create new Activities easily to reuse them later, or just wrap any async logic as anonymous Activity in the Thread.
 
 Rule of thumb:
