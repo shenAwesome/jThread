@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="jThread.js"></script>
+
+    <script>
+        var $ = window.jThread;
+
+        //With 2 functions as parameter, a Thread is  started.
+        $(function () {
+            //built in functions(Activities),safe to use inside Thread
+            $.log('start');
+            $.sleep(1000);
+            var repos = $.getJson('https://api.github.com/users/shenAwesome/repos');
+            $.log(repos);
+            //with 1 function as parameter, an Activity is executed.
+            //When interacting with the 'outside world', wrap logic as an activity
+            $(function () {
+                var html = repos.map(function (repo) {
+                    return '<label><input type="checkbox" />' + repo.name + '</label></br>';
+                }).join(' ');
+                document.querySelector('#div1').innerHTML = html;
+            });
+            //when the button clicked, this activity finishes
+            $(function (finish) {
+                var btn = document.createElement('button');
+                btn.innerHTML = "Click ME";
+                document.querySelector('#div1').appendChild(btn);
+                btn.onclick = finish;
+            });
+            //now the Thread is finished as the function is done.
+            return "all done";
+        }, function (ret) {//called when the thread finishes
+            alert(ret);
+        });
+
+    </script>
+</head>
+<body>
+    <div id="div1"></div>
+</body>
+</html>
