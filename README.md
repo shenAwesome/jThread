@@ -17,7 +17,7 @@ These activities needs to be run following certain orders.
 
 below is the implementation in jThread.
 
-'''javascript
+```javascript
 var $ = window.jThread; 
 //With 2 functions as parameter, a Thread is  started.
 $(function () {
@@ -46,4 +46,4 @@ $(function () {
 }, function (ret) {//called when the thread finishes
 	alert(ret);
 });
-'''
+```
