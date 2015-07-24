@@ -8,7 +8,7 @@ Disadvantages of callback coding style:
 * Code re-usability is harder to achieve, as every method has to take care of the callback.
 * Validation|Error handling is harder
 
-So why not use promises? Short answer is it looks ugly and complex to me.
+So why not use promises? Short answer is it looks ugly and complex to me. Sometimes it even looks worse than the callback style code.
 
 JThread utilizes the 'Thread&Activity' concept to solve the problem with natural JavaScript. It is inspired by the workflow/activity design and has two important Types: Thread and Activity. 
 
