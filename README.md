@@ -1,12 +1,19 @@
 # jThread
 A poor man's Thread for JavaScript
 
-The goal of jThread is to mimic the JAVA Thread in JavaScript to solve the 'Callback Hell' problem. In the Web page development, there are mainly 2 types of async logic: Ajax call or UI logic needs user interaction. 
-With callbacks, the code is often tightly coupled, the callback chain can be difficult to understand or debug. Code re-usability is harder to achieve . jThread utilizes the 'Thread&Activity' concept to solve the problem. 
-It is inspired by the workflow/activity design.
+The goal of jThread is to mimic the JAVA Thread in JavaScript to solve the 'Callback Hell' problem. 
 
-When coding with jThread, There are two important Types: Thread and Activity. A Thread mimics the behaviour of a thread in languages like Java or C#, where you can code in a blocking style without callbacks. 
-Activities are wrappers around the asynchronous functions and should only be used inside a thread. You can create new Activities easily to reuse them later, or just wrap any async logic as anonymous Activity in the Thread.
+Disadvantages of callback coding style: 
+* Code is either tightly coupled or messy with jumping logic (therefore harder to understand/maintain). 
+* Code re-usability is harder to achieve, as every method has to take care of the callback.
+* Validation|Error handling is harder
+
+So why not use promises? Short answer is it looks ugly and complex to me.
+
+JThread utilizes the 'Thread&Activity' concept to solve the problem with natural JavaScript. It is inspired by the workflow/activity design and has two important Types: Thread and Activity. 
+
+* A Thread mimics the behaviour of a thread in languages like Java or C#, where you can code in a blocking style without callbacks. 
+* Activities are wrappers around the asynchronous functions and should only be used inside a thread. You can create new Activities easily to reuse them later, or just wrap any async logic as anonymous Activity in the Thread.
 
 Rule of thumb:
 * Activities can only be used inside a Thread.
@@ -14,11 +21,9 @@ Rule of thumb:
 * An async function needs to have callback as the last parameter when wrapped as Activity. Callback(value) becomes the return value of the Activity.
 * You can create new Activities to reuse them later.
 
-Imaging this requirement :  
+Imaging this typical requirement :  
 
-* ajax call to a server 
-* display return json on the page
-* user select some items
+	ajax call -> display result -> user interaction
 
 Below is the implementation in jThread.
 
