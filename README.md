@@ -6,10 +6,10 @@ With callbacks, the code is often tightly coupled, the callback chain can be dif
 It is inspired by the workflow/activity design.
 
 When coding with jThread, There are two important Types: Thread and Activity. A Thread mimics the behaviour of a thread in languages like Java or C#, where you can code in a blocking style without callbacks. 
-Activities should only be used inside a thread. They are wrappers around the asynchronous functions. You can create new Activities easily to reuse them later, or just wrap any async logic as anonymous Activity in the Thread.
+Activities are wrappers around the asynchronous functions and should only be used inside a thread. You can create new Activities easily to reuse them later, or just wrap any async logic as anonymous Activity in the Thread.
 
 Rule of thumb:
-* Only use Activities inside a Thread.
+* Activities can only be used inside a Thread.
 * Only Activities can interact with variables outside the thread safely. Use existing Activities or wrap the logic in an Activity. 
 * An async function needs to have callback as the last parameter when wrapped as Activity. Callback(value) becomes the return value of the Activity.
 * You can create new Activities to reuse them later.
