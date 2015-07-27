@@ -6,10 +6,15 @@ var jt;
         function Thread(func, onFinish) {
             this.func = func;
             this.onFinish = onFinish;
-            this.step = 0;
+            this.step = -1;
             this.values = []; //values from activies
-            this.ctx = {};
-            this.labels = {};
+            this.ctx = {}; //this for every activity function
+            this.labels = {}; //to support goto
+            var that = this;
+            this.onFinish = function () {
+                that.updateStep(-1);
+                onFinish.apply(that, arguments);
+            };
         }
         Thread.prototype.next = function () {
             try {
@@ -41,8 +46,17 @@ var jt;
             this.values.length = 0;
             this.next();
         };
+        Thread.prototype.stop = function () {
+            this.currentActivity.stopHandler();
+            this.onFinish(null);
+        };
         Thread.prototype.onStep = function (step) {
             console.log('step(' + step + ')');
+        };
+        Thread.prototype.updateStep = function (s) {
+            if (arguments.length)
+                this.step = s;
+            this.onStep(this.step);
         };
         return Thread;
     })();
@@ -66,7 +80,8 @@ var jt;
                 thread.step++;
                 return thread.values[step];
             }
-            thread.onStep(step);
+            //run Activity logic if thread reaches here (means it's the first time)
+            thread.updateStep();
             var that = this;
             function activityFinish(value) {
                 if (thread.step == -1)
@@ -75,17 +90,17 @@ var jt;
                     value = null;
                 thread.values[step] = value;
                 setTimeout(function () {
-                    that.close();
+                    that.stop();
                     thread.next();
                 }, 1);
             }
             args.push(activityFinish);
-            this.closeHandler = this.func.apply(thread.ctx, args);
+            this.stopHandler = this.func.apply(thread.ctx, args);
             throw this;
         };
-        Activity.prototype.close = function () {
-            if (this.closeHandler)
-                this.closeHandler();
+        Activity.prototype.stop = function () {
+            if (this.stopHandler)
+                this.stopHandler();
         };
         Activity.prototype.toFunction = function () {
             var that = this;
@@ -95,6 +110,10 @@ var jt;
         };
         return Activity;
     })();
+    function toSync(func, async) {
+        var act = new Activity(func, async);
+        return act.toFunction();
+    }
     function jt(func1, func2) {
         if (arguments.length == 2) {
             var thread = new Thread(func1, func2);
@@ -104,21 +123,14 @@ var jt;
             return thread;
         }
         else {
-            var act = new Activity(func1, func1.length == 1);
-            var value = act.toFunction()();
-            return value;
+            return toSync(func1, func1.length == 1)();
         }
     }
     jt_1.jt = jt;
-    jt['label'] = function (label) {
+    jt['label'] = toSync(function (label) {
         var t = CurrentThread;
-        if (t.values[t.step])
-            return;
-        t.onStep(t.step);
         t.labels[label] = t.step;
-        t.values[t.step] = label;
-        t.step++;
-    };
+    }, false);
     jt['go'] = function (label) {
         var t = CurrentThread;
         throw t.labels[label];

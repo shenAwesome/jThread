@@ -8,16 +8,24 @@
         var $ = jt.jt;
 		
 		$(function(){
-			var value = 1;
-			value = $(function(){  
+			var value = 1; 
+			value = $(function(){   
 				return value+1; 
 			}); 
-			$.label('hello'); 
-			value = $(function(callback){
+			value = $(function(){   
+				return value+1; 
+			});  
+			$.label('hello');  
+			value = $(function(callback){ 
 				setTimeout(function(){
 					callback(value+1);
 				},2000) 
 			}); 
+			value = $(function(callback){ 
+				setTimeout(function(){
+					callback(value+1);
+				},2000) 
+			});
 			//$.go('hello');			
 			return value;
 		},function(v){
