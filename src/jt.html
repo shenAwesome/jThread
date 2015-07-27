@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="jt.js"></script>
+
+    <script>
+        var $ = jt.jt;
+		
+		$(function(){
+			var value = 1;
+			value = $(function(){  
+				return value+1; 
+			}); 
+			$.label('hello'); 
+			value = $(function(callback){
+				setTimeout(function(){
+					callback(value+1);
+				},2000) 
+			}); 
+			//$.go('hello');			
+			return value;
+		},function(v){
+			console.log(v);
+		}); 
+		
+       
+    </script>
+</head>
+<body>
+    <div id="div1"></div>
+</body>
+</html>
