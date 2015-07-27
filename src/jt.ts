@@ -1,9 +1,8 @@
 module jt{
-	
-	//this is the way to set Activity's parent thread
-	var CurrentThread:Thread;
-	
+	 
 	class Thread{ 
+		
+		static current:Thread; //used to set Activity's parent thread
 		
 		step = -1
 		values = [] //values from activies
@@ -22,7 +21,7 @@ module jt{
 	   
 	    next(){
 			try{
-				CurrentThread = this;
+				Thread.current = this;
 				var ret = this.func.call(this);
 				if (this.onFinish(ret)){//repeat if onFinish return true
 					this.start();
@@ -50,7 +49,7 @@ module jt{
 		} 
 		
 		stop(){
-			this.currentActivity.stopHandler();	
+			this.currentActivity.stop();	
 			this.onFinish(null);
 		}
 		
@@ -66,7 +65,7 @@ module jt{
 	
 	class Activity{ 
 		
-		stopHandler:Function;
+		private stopper:Function;
 		
 		constructor(private func:Function, async = true){
 			if (!async){
@@ -81,7 +80,7 @@ module jt{
 		} 
 		
 		run(args:Array<any>[]){
-			var thread = CurrentThread,
+			var thread = Thread.current ,
 				step = thread.step;
 			if (thread.values[step] !== undefined) { 
 				thread.step++;
@@ -100,12 +99,12 @@ module jt{
                 }, 1);
 			}
 			args.push(<any>activityFinish); 
-			this.stopHandler = this.func.apply(thread.ctx,args)
+			this.stopper = this.func.apply(thread.ctx,args)
 			throw this;
 		} 
 		
 		stop(){
-			if (this.stopHandler) this.stopHandler();
+			if (this.stopper) this.stopper();
 		}
 		
 		toFunction(){ 
@@ -137,12 +136,12 @@ module jt{
 	
 	
 	jt['label'] = toSync(function(label){
-		var t = CurrentThread; 
+		var t = Thread.current ; 
 		t.labels[label] = t.step;  
 	},false);
 	
 	jt['go'] = function(label){
-		var t = CurrentThread;
+		var t = Thread.current ;
 		throw t.labels[label];
 	}
 	
