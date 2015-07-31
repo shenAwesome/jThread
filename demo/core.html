@@ -1,0 +1,208 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="../src/core.js"></script>
+</head>
+<body>
+    <style>
+        div.btns > button {
+            margin: 5px;
+            padding: 5px;
+        }
+
+        #examples > button {
+            background-color: transparent;
+            border: none;
+            text-decoration: underline;
+            text-transform: capitalize;
+            cursor: pointer;
+            outline: none;
+        }
+
+            #examples > button:hover {
+                background-color: greenyellow;
+            }
+
+        #actions > button {
+        }
+
+        #display {
+            background-color: red;
+            height: 10px;
+            width: 0;
+            transition: all .2s;
+            overflow: visible;
+            color: black;
+            font-size: 30px;
+        }
+    </style>
+    <div style="margin:4px;">
+        Write code or pick a example, then clieck 'Run' button.
+    </div>
+    <div id="examples" class="btns"></div>
+
+    <div id="display"></div>
+
+    <div id="actions" class="btns">
+        <button onclick="start()">Start</button><button onclick="stop()" disabled>Stop</button>
+    </div>
+    <textarea id="code" spellcheck='false' style="width:800px;display:block;height:400px;"></textarea>
+    <script>
+
+        var thread;
+
+        function start() {
+            var code = document.getElementById('code').value;
+            thread = eval(code);
+            thread.onStep = function (step) {
+                var btns = document.querySelectorAll('#actions>button');
+                btns[0].setAttribute('disabled', true);
+                btns[1].setAttribute('disabled', true);
+                if (step == -1) {
+                    btns[0].removeAttribute('disabled');
+                } else {
+                    btns[1].removeAttribute('disabled');
+                }
+            }
+        }
+
+        function stop() {
+            thread.stop();
+        }
+
+
+        function extract(example) {
+            var lines = example.toString().split('\n');
+            lines.pop();
+            lines.shift();
+            lines = lines.map(function (line) {
+                return line.substring(12);
+            });
+            return lines.join('\n');
+        }
+
+        setTimeout(function () {
+            Object.keys(examples).forEach(function (name, i) {
+                var btn = document.createElement('button');
+                btn.innerHTML = name;
+                function onclick() {
+                    var ta = document.getElementById('code');
+                    ta.value = extract(examples[name]);
+                    ta.style.height = '0px';
+                    ta.style.height = ta.scrollHeight + 'px';
+                    document.getElementById('display').innerHTML = '';
+                    if (thread) {
+                        thread.stop();
+                        thread = null;
+                    }
+                };
+                if (i == 0) onclick();
+                btn.onclick = onclick;
+                document.getElementById('examples').appendChild(btn);
+            });
+        }, 1);
+
+        /*------------------------------- examples -------------------------------*/
+        var examples = {};
+
+        //if else
+        examples.forLoop = function () {
+            var style = document.getElementById('display').style;
+            _(function () {
+                for (var i = 0; i < 5; i++) {
+                    _.set(style, {
+                        height: '10px',
+                        width: '0',
+                        borderRadius: '0',
+                        backgroundColor: 'red,blue,green'.split(',')[i]
+                    });
+                    _.sleep(200);
+
+                    var length = 1;
+                    while (length < (i + 3)) {
+                        _.set(style, 'width', length * 100 + 'px');
+                        _.sleep(200);
+                        length++;
+                    }
+                }
+
+                _.set(style, {
+                    height: '40px',
+                    width: '40px',
+                    borderRadius: '40px',
+                    backgroundColor: 'red'
+                });
+
+            }, function (ret) {
+
+            });
+        }
+
+        //basic
+        examples.goto = function () {
+            //outside
+            var div = document.getElementById('display');
+            function display(msg) {
+                div.style.background = 'white';
+                div.style.height = 'auto';
+                div.style.width = 'auto';
+                div.innerHTML = msg;
+            }
+            //convert to Activity to use in thread code
+            //the display() function is not async, set the second parameter to false;
+            var _display = _.sync(display, false);
+
+            _(function () {
+                _display('A rolling game');
+                _.sleep(1000);
+
+                _.label('reRoll');
+
+                _display('Rolling...');
+
+                //code inside an activity can read/write outside
+                var value = _(function () {
+                    return "hello";
+                });
+                //this function has a callback parameter, so the Activity logic needs to use it to return value
+                value = _(function (callback) {
+                    setTimeout(function () {
+                        var rnd = Math.random();
+                        callback(rnd * 100);
+                    }, 1000);
+                });
+                _display(value);
+
+                var btn = _(function (callback) {
+                    var btns = document.createElement('span');
+                    btns.style.padding = '10px';
+                    'OK,Again'.split(',').forEach(function (btnName) {
+                        var btn = document.createElement('button');
+                        btn.innerHTML = btnName;
+                        btns.appendChild(btn);
+                        btn.onclick = function () {
+                            callback(btnName);
+                        };
+                    });
+                    div.appendChild(btns);
+                    return function () {//called when activity finishes
+                        div.removeChild(btns);
+                    }
+                });
+
+                //goto the label 'reRoll'
+                if (btn == 'Again') _.go('reRoll');
+
+                return value;
+            }, function (ret) {
+                //normal javascript code, called when thread finishes.
+                if (ret) alert('You have chosed ' + ret);
+            });
+        }
+
+
+
+    </script>
+</body>
+</html>

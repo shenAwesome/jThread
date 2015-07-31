@@ -15,7 +15,7 @@
 *    alert(ret);
 * }); 
 * 
-*/ 
+*/
 function $() { };
 
 /**
@@ -139,7 +139,9 @@ function $() { };
 
 
     /**
-     * test
+     * @function myFunction
+     * @memberof MyNamespace
+     * @static
      */
     function main() {
         var args = Array.prototype.slice.call(arguments);
