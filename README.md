@@ -3,10 +3,9 @@ A poor man's Thread for JavaScript
 
 The goal of jThread is to mimic Thread in JavaScript to replace callback or promises, the benifits are:
 
-1) make the logic more readable and maintainable, avoid the 'Callback Hell'.
-2) provide a mechanism to cancel or restart a process.
-3) consistant coding style when handling user input & AJAX call. 
-4) super small size and batteries included 
+* Make async logic more readable and maintainable, avoid the 'Callback Hell'.
+* Provide a mechanism to cancel or restart a process.
+* Super small size and batteries included. 
 
 
 JThread utilizes the 'Thread&Activity' concept to solve the problem with natural JavaScript. It is inspired by the workflow/activity design and has two important Types: Thread and Activity. 
