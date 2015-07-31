@@ -7,6 +7,9 @@ The goal of jThread is to mimic Thread in JavaScript to replace callback or prom
 * Provide a mechanism to cancel or restart a process.
 * Super small size and batteries included. 
 
+demo & playground:
+
+http://shen.apphb.com/jt/demo/core.html 
 
 JThread utilizes the 'Thread&Activity' concept to solve the problem with natural JavaScript. It is inspired by the workflow/activity design and has two important Types: Thread and Activity. 
 
@@ -18,14 +21,30 @@ The code is just pure JavaScript with some simple rules:
 * Only Activities can read/write variables outside the thread safely.  
 * Code inside Activities should not set Thread variables directly.
 
-see the diagram:
+see below sample:
+
+'''
+
+//outside
+
+var outSideA = 0;
+
+_(function(){
+    
+    //thread logic, don't interact with outside
+    var value = 0; 
+    
+    //activity can interact with outside
+    //activity can read thread variables and use return to set thread variables.
+    value = _(function(){
+        return outSideA;
+    }); 
+    
+    return value; 
+},function(ret){ // on thread finishes
+    alert(ret); 
+}); 
+
+'''
 
 
-
-
-
-
-
-demo & playground:
-
-http://shen.apphb.com/jt/demo/core.html 
