@@ -23,7 +23,7 @@ The code is just pure JavaScript with some simple rules:
 
 see below example:
 
-```
+``` javascript
 
 //outside
 
@@ -37,6 +37,7 @@ _(function(){
     //activity can interact with outside
     //activity can read thread variables and use return to set thread variables.
     value = _(function(){
+        outSideA += value;
         return outSideA;
     }); 
     
