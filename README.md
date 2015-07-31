@@ -21,9 +21,9 @@ The code is just pure JavaScript with some simple rules:
 * Only Activities can read/write variables outside the thread safely.  
 * Code inside Activities should not set Thread variables directly.
 
-see below sample:
+see below example:
 
-'''
+```
 
 //outside
 
@@ -45,6 +45,6 @@ _(function(){
     alert(ret); 
 }); 
 
-'''
+```
 
 
