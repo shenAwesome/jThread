@@ -47,8 +47,10 @@ var jt;
             this.next();
         };
         Thread.prototype.stop = function () {
-            this.currentActivity.stop();
-            this.onFinish(null);
+            if (this.step != -1) {
+                this.currentActivity.stop();
+                this.onFinish(null);
+            }
         };
         Thread.prototype.onStep = function (step) {
             //console.log('step(' + step + ')');
@@ -132,30 +134,40 @@ var jt;
         }
     }
     jt.jThread = jThread;
-    var j = jThread;
-    j.label = toSync(function (label) {
+    var _ = jThread;
+    _.label = toSync(function (label) {
         var t = Thread.current;
         t.labels[label] = t.step;
     }, false);
-    j.go = function (label) {
+    _.go = function (label) {
         var t = Thread.current;
         throw t.labels[label];
     };
-    j.sync = toSync;
-    j.install = function (name, func, async) {
-        j[name] = toSync(func, async);
+    //convert a function to Activity
+    _.sync = toSync;
+    //convert a thread to Activity
+    _.syncThread = function (func) {
+        return _.sync(function () {
+            var args = Array.prototype.slice.call(arguments);
+            var callback = args.pop();
+            var thread = _(function () {
+                return func.apply(null, args);
+            }, callback);
+            return function () {
+                thread.stop();
+            };
+        });
+    };
+    _.install = function (name, func, async) {
+        _[name] = toSync(func, async);
     };
     var win = window;
     win.$ = win.$ || jThread;
     win._ = win.$ || jThread;
-    //debug method
-    j.install('log', function (msg) {
-        console.log(msg);
-    }, false);
-    j.install('sleep', function (delay, callback) {
+    _.install('sleep', function (delay, callback) {
         setTimeout(callback, delay);
     });
-    j.install('set', function (obj, key, value) {
+    _.install('set', function (obj, key, value) {
         if (typeof key === 'object') {
             Object.keys(key).forEach(function (k) {
                 obj[k] = key[k];
@@ -165,7 +177,19 @@ var jt;
             obj[key] = value;
         }
     }, false);
-    j.install('get', function (obj, key) {
+    _.install('get', function (obj, key) {
         return obj[key];
+    }, false);
+    _.install('log', function (message) {
+        console.log(message);
+    }, false);
+    _.install('alert', function (message) {
+        window.alert(message);
+    }, false);
+    _.install('prompt', function (text, defaultText) {
+        return window.prompt(text, defaultText);
+    }, false);
+    _.install('confirm', function (message) {
+        return window.confirm(message);
     }, false);
 })(jt || (jt = {}));

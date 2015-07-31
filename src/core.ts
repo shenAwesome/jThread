@@ -9,6 +9,8 @@ module jt {
         ctx = {} //this for every activity function
         labels = {} //to support goto
 		
+        args;
+
         private currentActivity: Activity;
 
         constructor(private func: Function, private onFinish: Function) {
@@ -50,8 +52,10 @@ module jt {
         }
 
         stop() {
-            this.currentActivity.stop();
-            this.onFinish(null);
+            if (this.step != -1) {
+                this.currentActivity.stop();
+                this.onFinish(null);
+            }
         }
 
         onStep(step) {
@@ -107,7 +111,7 @@ module jt {
         stop() {
             try {
                 if (this.stopper) this.stopper();
-            } catch (e){} 
+            } catch (e) { }
         }
 
         toFunction() {
@@ -138,21 +142,37 @@ module jt {
         }
     }
 
-    var j: any = jThread;
+    var _: any = jThread;
 
-    j.label = toSync(function (label) {
+    _.label = toSync(function (label) {
         var t = Thread.current;
         t.labels[label] = t.step;
     }, false);
 
-    j.go = function (label) {
+    _.go = function (label) {
         var t = Thread.current;
         throw t.labels[label];
     }
+    
+    //convert a function to Activity
+    _.sync = toSync;
 
-    j.sync = toSync;
-    j.install = function (name, func, async?) {
-        j[name] = toSync(func, async);
+    //convert a thread to Activity
+    _.syncThread = function (func) {
+        return _.sync(function () {
+            var args = Array.prototype.slice.call(arguments);
+            var callback = args.pop();
+            var thread = _(function () {
+                return func.apply(null, args)
+            }, callback); 
+            return function () {//stopper 
+                thread.stop();
+            };
+        });
+    };
+
+    _.install = function (name, func, async?) {
+        _[name] = toSync(func, async);
     }
 
     var win: any = window;
@@ -160,27 +180,42 @@ module jt {
     win.$ = win.$ || jThread;
     win._ = win.$ || jThread;
 
-    //debug method
-    j.install('log', function (msg) {
-        console.log(msg);
-    }, false);
 
-    j.install('sleep', function (delay, callback) {
+
+
+    _.install('sleep', function (delay, callback) {
         setTimeout(callback, delay);
     });
 
-
-    j.install('set', function (obj, key, value) {
+    _.install('set', function (obj, key, value) {
         if (typeof key === 'object') {
             Object.keys(key).forEach(function (k) {
                 obj[k] = key[k];
             });
-        }else {
+        } else {
             obj[key] = value;
-        } 
+        }
     }, false);
 
-    j.install('get', function (obj, key) {
+    _.install('get', function (obj, key) {
         return obj[key];
     }, false);
+
+
+    _.install('log', function (message) {
+        console.log(message);
+    }, false);
+
+    _.install('alert', function (message) {
+        window.alert(message);
+    }, false);
+
+    _.install('prompt', function (text, defaultText) {
+        return window.prompt(text, defaultText);
+    }, false);
+
+    _.install('confirm', function (message) {
+        return window.confirm(message);
+    }, false);
+
 }

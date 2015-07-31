@@ -28,9 +28,6 @@
         }
 
         #display {
-            background-color: red;
-            height: 10px;
-            width: 0;
             transition: all .2s;
             overflow: visible;
             color: black;
@@ -96,6 +93,10 @@
                         thread.stop();
                         thread = null;
                     }
+                    var display = document.createElement('div');
+                    var old = document.getElementById('display');
+                    old.parentNode.replaceChild(display, old);
+                    display.id = 'display';
                 };
                 if (i == 0) onclick();
                 btn.onclick = onclick;
@@ -110,17 +111,18 @@
         examples.forLoop = function () {
             var style = document.getElementById('display').style;
             _(function () {
+
                 for (var i = 0; i < 5; i++) {
                     _.set(style, {
                         height: '10px',
                         width: '0',
                         borderRadius: '0',
-                        backgroundColor: 'red,blue,green'.split(',')[i]
+                        backgroundColor: 'red,blue,green,silver,black'.split(',')[i]
                     });
                     _.sleep(200);
 
-                    var length = 1;
-                    while (length < (i + 3)) {
+                    var length = 0;
+                    while (length <= (i + 1)) {
                         _.set(style, 'width', length * 100 + 'px');
                         _.sleep(200);
                         length++;
@@ -128,10 +130,15 @@
                 }
 
                 _.set(style, {
-                    height: '40px',
-                    width: '40px',
-                    borderRadius: '40px',
+                    height: '140px',
+                    width: '140px',
+                    borderRadius: '140px',
                     backgroundColor: 'red'
+                });
+                _.sleep(500);
+                _.set(style, {
+                    height: '0',
+                    width: '0'
                 });
 
             }, function (ret) {
@@ -144,9 +151,6 @@
             //outside
             var div = document.getElementById('display');
             function display(msg) {
-                div.style.background = 'white';
-                div.style.height = 'auto';
-                div.style.width = 'auto';
                 div.innerHTML = msg;
             }
             //convert to Activity to use in thread code
@@ -155,6 +159,7 @@
 
             _(function () {
                 _display('A rolling game');
+
                 _.sleep(1000);
 
                 _.label('reRoll');
@@ -201,6 +206,36 @@
             });
         }
 
+        //basic
+        examples.threadAsActivity = function () {
+            var div = document.getElementById('display');
+
+            //an Activity implemented with thread syntax,
+            //the inner thread will be stopped if parent thread gets stopped, just like normal Activity
+            var enterName = _.syncThread(function (defaultName) {
+                _.label('EnterName');
+                var name = _.prompt("Please enter name", defaultName);
+                if (!name || name.length < 3) {
+                    alert('name is too short');
+                    _.go('EnterName');
+                }
+                _.sleep(1000);
+                return name;
+            });
+
+            //reuse enterName Activity in a Thread
+            _(function () {
+                var users = [];
+                for (var i = 0; i < 2; i++) {
+                    users.push(enterName('name' + i));
+                }
+                return users;
+            }, function (ret) {
+                if (ret) {
+                    div.innerHTML = ret.join(',');
+                }
+            });
+        };
 
 
     </script>

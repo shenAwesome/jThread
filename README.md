@@ -32,11 +32,11 @@ var outSideA = 0;
 _(function(){
     
     //thread logic, don't interact with outside
-    var value = 0; 
-    
-    //activity can interact with outside
-    //activity can read thread variables and use return to set thread variables.
+    var value = 0;  
+   
     value = _(function(){
+        //code inside an activity can interact with outside
+        //activity can read thread variables and use return to set thread variables.
         outSideA += value;
         return outSideA;
     }); 
