@@ -230,8 +230,6 @@ module jt {
     win._ = win.$ || jThread;
 
 
-
-
     _.install('sleep', function (delay, callback) {
         setTimeout(callback, delay);
     });
