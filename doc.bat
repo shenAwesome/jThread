@@ -1,1 +1,1 @@
-jsdoc src/jThread.js -d doc
+jsdoc src/jThread.js -d doc -c temp.txt
